@@ -1,0 +1,98 @@
+import java.util.ArrayList;
+import java.util.List;
+
+abstract class FileSystemElement {
+    protected String name;
+
+    public FileSystemElement(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public abstract void display(int indent);
+    public abstract long calculateSize();
+    public abstract void rename(String newName);
+}
+
+class File extends FileSystemElement {
+    private long size;
+
+    public File(String name, long size) {
+        super(name);
+        this.size = size;
+    }
+
+    @Override
+    public void display(int indent) {
+        System.out.println(" ".repeat(indent) + "File: " + name);
+    }
+
+    @Override
+    public long calculateSize() {
+        return size;
+    }
+
+    @Override
+    public void rename(String newName) {
+        this.name = newName;
+    }
+}
+
+class Folder extends FileSystemElement {
+    private List<FileSystemElement> elements = new ArrayList<>();
+
+    public Folder(String name) {
+        super(name);
+    }
+
+    public void addElement(FileSystemElement element) {
+        elements.add(element);
+    }
+
+    @Override
+    public void display(int indent) {
+        System.out.println(" ".repeat(indent) + "Folder: " + name);
+        for (FileSystemElement element : elements) {
+            element.display(indent + 2);
+        }
+    }
+
+    @Override
+    public long calculateSize() {
+        return elements.stream().mapToLong(FileSystemElement::calculateSize).sum();
+    }
+
+    @Override
+    public void rename(String newName) {
+        this.name = newName;
+    }
+}
+
+public class FileSystemTest {
+    public static void main(String[] args) {
+        // Створення кореневої папки
+        Folder rootFolder = new Folder("root");
+
+        rootFolder.addElement(new File("file1.txt", 100));
+        rootFolder.addElement(new File("file2.txt", 200));
+
+        Folder subFolder = new Folder("subFolder");
+        subFolder.addElement(new File("subFile1.txt", 50));
+        subFolder.addElement(new File("subFile2.txt", 75));
+
+        rootFolder.addElement(subFolder);
+
+        System.out.println("File System Structure:");
+        rootFolder.display(0);
+
+        System.out.println("\nTotal size of root folder: " + rootFolder.calculateSize() + " bytes");
+
+        subFolder.elements.get(0).rename("newSubFile1.txt");
+
+        System.out.println("\nFile System Structure after renaming:");
+        rootFolder.display(0);
+    }
+}
