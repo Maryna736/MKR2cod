@@ -1,0 +1,144 @@
+import java.util.ArrayList;
+import java.util.List;
+
+interface TeamMember {
+    String getInfo();
+}
+
+class Developer implements TeamMember {
+    private String name;
+    private int experience;
+    private String[] skills;
+
+    public Developer(String name, int experience, String[] skills) {
+        this.name = name;
+        this.experience = experience;
+        this.skills = skills;
+    }
+
+    @Override
+    public String getInfo() {
+        return "Developer " + name + ", Experience: " + experience + " years, Skills: " + String.join(", ", skills);
+    }
+}
+
+class Tester implements TeamMember {
+    private String name;
+    private int experience;
+    private String[] testTypes;
+
+    public Tester(String name, int experience, String[] testTypes) {
+        this.name = name;
+        this.experience = experience;
+        this.testTypes = testTypes;
+    }
+
+    @Override
+    public String getInfo() {
+        return "Tester " + name + ", Experience: " + experience + " years, Test types: " + String.join(", ", testTypes);
+    }
+}
+
+class ProjectManager implements TeamMember {
+    private String name;
+    private int experience;
+    private int completedProjects;
+
+    public ProjectManager(String name, int experience, int completedProjects) {
+        this.name = name;
+        this.experience = experience;
+        this.completedProjects = completedProjects;
+    }
+
+    @Override
+    public String getInfo() {
+        return "Project Manager " + name + ", Experience: " + experience + " years, Completed projects: " + completedProjects;
+    }
+}
+
+class TeamMemberFactory {
+    public static TeamMember createMember(String role, String name, int experience, String[] skillsOrTestTypes) {
+        switch (role.toLowerCase()) {
+            case "developer":
+                return new Developer(name, experience, skillsOrTestTypes);
+            case "tester":
+                return new Tester(name, experience, skillsOrTestTypes);
+            case "project_manager":
+                return new ProjectManager(name, experience, Integer.parseInt(skillsOrTestTypes[0]));
+            default:
+                throw new IllegalArgumentException("Unknown role");
+        }
+    }
+}
+
+class Project {
+    private String name;
+    private List<TeamMember> members;
+    private List<String> tasks;
+    private List<Observer> observers;
+
+    public Project(String name) {
+        this.name = name;
+        this.members = new ArrayList<>();
+        this.tasks = new ArrayList<>();
+        this.observers = new ArrayList<>();
+    }
+
+    public void addMember(TeamMember member) {
+        members.add(member);
+        notifyObservers("New team member added: " + member.getInfo());
+    }
+
+    public void addTask(String task) {
+        tasks.add(task);
+        notifyObservers("New task added: " + task);
+    }
+
+    public void addObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    private void notifyObservers(String message) {
+        for (Observer observer : observers) {
+            observer.update(message);
+        }
+    }
+}
+
+interface Observer {
+    void update(String message);
+}
+
+class TeamObserver implements Observer {
+    private String name;
+
+    public TeamObserver(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void update(String message) {
+        System.out.println(name + " received message: " + message);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        TeamMember developer = TeamMemberFactory.createMember("developer", "John", 5, new String[]{"Java", "Python"});
+        TeamMember tester = TeamMemberFactory.createMember("tester", "Anna", 3, new String[]{"Unit Testing", "Integration Testing"});
+        TeamMember projectManager = TeamMemberFactory.createMember("project_manager", "Sarah", 7, new String[]{"5"});
+
+        Project project = new Project("Project X");
+
+        project.addMember(developer);
+        project.addMember(tester);
+        project.addMember(projectManager);
+
+        project.addObserver(new TeamObserver("John"));
+        project.addObserver(new TeamObserver("Anna"));
+        project.addObserver(new TeamObserver("Sarah"));
+
+        project.addTask("Develop login feature");
+        project.addTask("Test login feature");
+    }
+}
